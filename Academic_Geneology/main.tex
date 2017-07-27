@@ -1,0 +1,134 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Academic Genealogy Project using British Library EThOS meta-data: An Informatics perspective}
+\author{Sagar Joglekar}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Academic influence and diffusion of information has been a topic of discussion for several decades in the complex networks community. It could be entirely because of the ease of access and structure seen with the data related to academic publications. This report looks at the unique dataset that British Library provides with their E-Thesis Online Service (EThOS) meta-data and discusses various angles seen in the literature from Mathematics \& Computer Science communities. Further the report also discusses a list of possible open-source frameworks and state of art tools which could open new avenues into analyzing this unique dataset for insights into Academic genealogy. Finally the report proposes standalone and hybrid ideas and approaches this Bid can take to further the understanding of the subject
+\end{abstract}
+
+\section{Introduction}
+
+Academic Genealogy is a very complex term to explore. The very term Genealogy implies a premise of relationship between two entities to be in some form of inherited nature. The idea that academics are influenced and triggered by ideas outside their focus of work has been well explored and discussed in the past. In the realm of complex networks especially, this idea gained a lot of traction and several works have been able to prove it to a certain extent. The very act of citation implies that some form of diffusion of ideas from the cited papers have taken place, and this is measured quite actively in the informatics community. 
+\par
+However the focus of this project is to look at a very special kind of relationship in the academic world. The relation between a supervisor and their student. It is extremely important to understand this academic relation both in terms of a understanding the contribution of an adviser towards a student's academic career and its impact to the overall academic research scenario. This can be achieved by understanding the over all temporal trend of the student adviser relationship vis-a-vis the actual research output.
+This report would introduce the reader in a very limited but focused way to the solutions discussed among the Informatics community as a whole understanding Genealogy from an information diffusion and impact standpoint. We first discuss the related literature found in the complex networks community regarding similar research problems. Then we discuss the unique dataset that we have at our disposal from the EThOS service and some pitfalls we may face. Then we look at some possible solutions that could be used to augment the missing links in the dataset. We then look at different software and algorithmic tools available in the state of art. And finally we close by looking at some possible research questions and approaches to address them.
+
+\section{Related work}
+Understanding genealogy from an Informatics stand point deals with modeling diffusion, impact and mutation of ideas between a source and its descendants. This could be done by looking for signatures of common inspirations or looking for direct occurrences of certain memes (treating ideas as genomes) in the literature originating from source and its descendants. Since the advent of the branch of mathematics which deals with complex networks or graphs, this has been a hot topic of study. This is simply because citations provide a structured and well curated data to generate complex networks from. One of the very early studies in this field was from \cite{egghe1990introduction} where they introduced the term \textit{informetrics} which is the study of measuring and modeling information dissemination. Newman \cite{newman2004coauthorship} looked at interdisciplinary of academic research using co-authorship networks as a proxy. The author does very seminal analysis on how different academic communities interact and collaborate. Another recent work \cite{dietz2007unsupervised} deals with a similar problem of impact and influence of papers on each other. Ideas from such studies can be easily adapted for the use case of understanding similar effects in a supervisor student relation. The influence was evaluated by using citations as metrics which is shown to directly correlate to the similarity or alignment of work done. A recent study \cite{sugimoto2011academic} looks at academic genealogy in terms of interdisciplinary between mentors and doctoral students. The work focuses on understanding the changing trend of areas of study between mentors and students. Unsurprisingly the study finds a trend of students citing more interdisciplinary research if their advisers show a similar behavior. This supports the need for study of this project and warrants further investigation. 
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{Figures/DM_citation_graph.png}
+\caption{\label{fig:Citation}Citation graph for top ACM conferences}
+\end{figure}
+
+\footnotetext{http://gisellezeno.com/tag/graphs.html}
+
+
+\section{EThOS Dataset}
+
+The E-Thesis Online service from British Library \footnote{http://ethos.bl.uk/} provides a unique collection of meta-data about online compilation of thesis from different universities in the UK. The following are a few salient fields about the data. 
+\subsection{Structure}
+The data has been arranged in accordance with following fields 
+\begin{itemize}
+\item \textbf{Title:} The title of Thesis. There are in all 387331 thesis items in the dataset out of which 386696 are unique. The others may have empty fields or may be duplicates. This is by far the most complete field in the dataset with 0 missing items
+\item \textbf{Author:} This field lists the author of the thesis. There are 387327 entries out of which 372793 are unique. There may be some missing or some may have duplicate entries (or multiple Ph.D.s \dots) 
+\item \textbf{Supervisors} This is by far the most important and by far the most incomplete field according to our preliminary investigation. The total number of Thesis records with a non-null supervisor field is just 28022. This implies that majority of thesis records have missing supervisors. This is a hole in the data, but it can be filled by some techniques discussed in further sections
+\item \textbf{Awarding Body:} This is not necessarily the university where the student did his Ph.D. This includes colleges and affiliated institutions as well. This field is completed for almost all the records, but the unique entries are 1132, which makes sense as there are a limited number of colleges in the UK 
+\item \textbf{Institution:} This field enlists the umbrella institution that awards the degree. There are 151 unique institutions across the dataset
+\item \textbf{Date:} The data of submission of Thesis. This field ranges from 1812 all the way till 2015. Interestingly 50\% of all the thesis in the database are submitted after 2001 (last 15 years)
+\item \textbf{Qualification:} This is the qualification for which the thesis was submitted. Ph.D. is the most frequently occurring entry, but there are 2619 unique qualifications for which the thesis was submitted. 
+\item \textbf{Abstract:} This contains the abstract for the thesis. There are in all 118226 abstracts present in the dataset and 269105 are missing. This is another hole in the dataset, but is not as important as the previous one.
+\item \textbf{Keywords:} The keywords associated with the thesis. This is an important field for inferring the area of work of the author. There are 182433 missing entries for this field
+\item \textbf{IR Link \& EThOS Link : } These two fields contain the direct URLs to IR and EThOS services. There are 280838 missing IR links but all EThOS links are present.
+\end{itemize}
+
+The structure of the dataset is very intuitive. But as mentioned in the description, there are some holes, which can cause issues while inferring genealogy of authors. In the next section we can discuss some augmentation sources to support our data and some methods to infer some missing pieces of the data
+
+
+
+% \begin{table}
+% \centering
+% \begin{tabular}{l|r}
+% Item & Quantity \\\hline
+% Widgets & 42 \\
+% Gadgets & 13
+% \end{tabular}
+% \caption{\label{tab:widgets}An example table.}
+% \end{table}
+
+\subsection{Data augmentation services}
+\label{DataAug}
+Augmenting data to complete the missing links for Thesis submitted before the ubiquitous presence of Internet would be challenging, but since that epoch, most if not all publications and thesis can be accessed using open access and academic platforms. One such platform for accessing publications is Google Scholar \footnote{scholar.google.com} which allows access to millions of indexed publications online. Crawling this platform is challenging, but is not impossible as seen from previous attempts \footnote{https://github.com/ckreibich/scholar.py}. Once you crawl the citations page for an author whose supervisor fields are empty, inferring the supervisor becomes a matter of citation network analysis. Several works in literature \cite{ciotti2016homophily,Gipp:2011:CET:1998076.1998124} use inference methods and common components in citation networks to infer missing links and plagiarized content. These methods can be extended to infer supervisors, which in itself would be a novel contribution.
+Some other service of our use are Web of Science, PubMed Central, Mendeley, DPLB and the American Physical Society.
+
+% \LaTeX{} is great at typesetting mathematics. Let $X_1, X_2, \ldots, X_n$ be a sequence of independent and identically distributed random variables with $\text{E}[X_i] = \mu$ and $\text{Var}[X_i] = \sigma^2 < \infty$, and let
+% \[S_n = \frac{X_1 + X_2 + \cdots + X_n}{n}
+%       = \frac{1}{n}\sum_{i}^{n} X_i\]
+% denote their mean. Then as $n$ approaches infinity, the random variables $\sqrt{n}(S_n - \mu)$ converge in distribution to a normal $\mathcal{N}(0, \sigma^2)$.
+
+
+\section{Methods}
+
+Assuming we are able to collect and organize all the missing and required data at one place, the next step is to actually explore methods which could help in understanding influence and impact of supervisors on Ph.D. graduates. These impacts need to be quantified in terms of measures which are directly proportional to the closeness of work.
+The closeness can be measured by association. The work by \cite{fortunato2010community} \cite{blondel2008fast} looks at communities and community detection in citation networks. The empirical evidence from patent citation suggest that authors do subscribe to communities and create closely connected community of citations which cite locally \cite{10.2307/2118401}. These ideas are equally valid for academic citations and can help to heuristically or methodically derive certain relations between authors. Looking at academic genealogy as a function of community membership would be an interesting insight into understanding the question of "siloed" academic activity, and would help engage communities of academics to pursue inter-disciplinary work.
+Another aspect of genealogy is the way ideas propagate, mutate and multiply. Over the years several measures have been developed understand the problem of diffusion of ideas. Most of these measures look at citation networks as a proxy for association with a particular community. A popular approach is to model information diffusion as a viral infection diffusing across a population \cite{cheng2014can,pei2015exploring}. There are other approaches to model ideas as Memes (as in genetic memes) propagating through academic circles \cite{myers2012information}. Understanding this aspect of academic genealogy would be unique in its own right.
+Another angle from an informatics standpoint is the linguistic genealogy arising from academic one. Language modeling, author prediction and writing styles are hot topics of study in computational linguistics.
+
+\section{Tools}
+To establish validity of one or more, or a combination of above methods, we need accompanying tools to acquire, store, visualize and analyze the data. This section discusses every aspect of the problem with some pointers. Most software tools mentioned here would be written and supported in Python.
+
+\subsubsection{Acquisition}
+As mentioned in section \ref{DataAug}, this project would definitely need additional data. This can be done by crawling one or all of the listed sources for data. To crawl a service, we either need access to an API for that service or we need to scrape the page using some heuristic techniques. This is made easy by frameworks like Scrapy \footnote{http://scrapy.org/} or BeautifulSoup \footnote{https://www.crummy.com/software/BeautifulSoup/}. These frameworks allow the programmer to \textit{programatically} request a webpage from one of these services and extract selected elements from the page. Some of these services like Mendeley and DPLB do have APIs that allow us to acquire meta-data in a much easier way. For more complicated scraping there are tools from media labs Sciences.po which allow seamless depth first crawling of links. Hyphe \footnote{http://hyphe.medialab.sciences-po.fr/demo/} is a major contributor to this space 
+
+\subsubsection{Store}
+
+Once you download a data, you need efficient way to store it and scale it. For datasets up to a few tens of Gigabytes, storing them in raw Comma separated values, or synthetic hierarchical binary formats like HDF5 \footnote{http://www.h5py.org/} would allow quick and easy data access for analysis. For anything larger, there are scalable flat databases like Mongo\footnote{https://www.mongodb.com/} or Neo4J \footnote{https://neo4j.com/} which is a scalable graph store. 
+
+\subsubsection{Visualize}
+
+Visualization of influence and genealogy graphs would be crucial for intuitive understanding of the dynamics of these. There are several interesting tools for visualization viz. Gephi\footnote{https://neo4j.com/} or Networkx \footnote{https://networkx.github.io/}.
+
+\subsubsection{Analyze}
+Analysis of all the data would require several tools and frameworks. For numerical and linear algebra there would be Numpy. For machine learning and language modeling most frameworks would support a python based back end. A few popular frameworks are Scikit Learn, Scipy , Theano , Caffe etc. Gensim is a very popular framework for understanding word representations in a latent space, which allows easy supervised learning models to be trained \cite{mikolov2013distributed}. Another state of the art framework for efficient word representations is GLoVe \cite{pennington2014glove} which allows a better representation of natural languages \footnote{http://nlp.stanford.edu/projects/glove/}
+
+\section{Research Questions}
+With all these tools and data sources at the project's disposal, we can look at the genealogy problem in conjunction with several questions currently discussed in the informatics and computer science community.
+
+\subsubsection{Supervisor inference} The missing links in the thesis dataset create a problem. But predicting citation links has been a well explored problem \cite{ciotti2016homophily,arnold2009information,yu2012citation,liben2007link}. Using academic publications of authors with missing Supervisors can be employed as a proxy to generate collaboration networks. These networks can potentially shed light on the most influential collaborator in the author's work. These influential nodes can be looked upon as academic mentors. It would be interesting to explore the direction of predicting links with mentors based on the methods popular in the literature. 
+
+\subsubsection{Influence and Impact analysis}
+Academic genealogy can be looked upon in terms of actual influence and impact as a result of collaborations together or because of prolonged apprenticeship for a particular mentor. Co-authorship networks are particularly analyzed to a great extent \cite{glanzel2004analysing,kretschmer2004author,liu2005co,1742-5468-2005-09-P09008,chang2009exploring,solomon2000social}. Different diffusion and percolation models from statistical physics have been used to understand information diffusion across co-authorship networks \cite{solomon2000social,achlioptas2009explosive,watts2002simple,arnold2009information,cui2010citation}. Another approach to understand influence and impact is to model it after viral outbreaks using Infection models \cite{myers2012information}. \textit{Memetic} models are an interesting direction to explore to understand propagation of mentor ideas in the literature of students and their descendants \cite{kuhn2014inheritance} 
+
+\subsubsection{Multilayered networks and Geographic impact}
+This question is very relevant in the post-internet age. People move after acquiring a Ph.D. and they may pursue an academic career in a geographically distant location. With the advent of internet, social networks like LinkedIn expose the temporal and geographic footprint of an individual when it comes to their careers. When used in conjunction with citation,co-authorship or advisor-student networks, generate a very rich representation of information often called as Multi-layered networks. There has been some work in these areas \cite{cui2010citation,kazienko2010multi,li2009multi} which show very promising results. More so because there is a geographical component to this, it would be very interesting to see diffusion of ideas through academic descendants across the globe.
+
+\subsubsection{Language and Topic modeling using machine learning}
+In the past decade there has been tremendous progress in the fields of Artificial intelligence, language modeling, speech recognition, natural language processing and several other fields thought to be beyond reach of machine interface. This opens new doors for modeling writing styles and grammar signatures. In the recent years, there has been prolific work in this field \cite{rehurek2010software,wei2006lda}, exploring possibilities of inherited language styles and topics. There has been very preliminary work in learning linguistic signatures using recurrent neural networks \cite{bagnall2015author}. The theory of RNNs has see unprecedented progress with unreasonable accuracy in predicting coherent text \cite{sutskever2011generating}. Modeling genealogy in a linguistic sense would be a very interesting question to solve. 
+
+\section{Discussion}
+The current understanding of this project (author's perspective) is that there are several interesting research questions to be posed looking at the unique dataset at our disposal. There are some hurdles along the way which need to be addressed before the real work begins, but with the plethora of computational tools and resources, there is a reasonable promise in perusing this project in one or all the directions enumerated. Academic genealogy has been a well studied topic, but most of the methods in art use heuristic or non-empirical methods to look at the academic dynamics of adviser student relationship. Understanding the subject using the multimodal data proposed can contribute in real sense to the understanding of academic genealogy. More so, looking at the post-internet world and data, it would be an interesting contribution to look at the global impacts of "\textit{heredity of ideas}" in action.
+
+
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}
